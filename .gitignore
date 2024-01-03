@@ -1,0 +1,9 @@
+*.DS_Store
+*._.DS_Store
+tmp.py
+data_object_image_2/
+data_object_velodyne/
+testing/
+self_data/
+correspond_data/
+__pycache__/
