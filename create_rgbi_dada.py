@@ -8,6 +8,8 @@ from tqdm import tqdm
 import yaml
 from PIL import Image
 
+import proj_mapped_pointcloud2cam
+
 def window_max_filter(img_array):
     from scipy.ndimage import maximum_filter
 
@@ -161,26 +163,34 @@ def process_one_frame(image_file, pointcloud_file, cam_lidar_calib_file):
 def main():
 
     ros_bag_name = 'in_1221_2023-12-21-16-06-08'
-    img_dir = f'correspond_data/{ros_bag_name}/selected_image'
-    pointcloud_dir = f'correspond_data/{ros_bag_name}/selected_pointcloud'
+    # img_dir = f'correspond_data/{ros_bag_name}/selected_image'
+    # pointcloud_dir = f'correspond_data/{ros_bag_name}/selected_pointcloud'
+    img_dir = f'correspond_data/after_mapping/{ros_bag_name}/selected_image'
+    pointcloud_dir = f'correspond_data/after_mapping/{ros_bag_name}/selected_pose'
     # calib_data_path = 'ros_data/20231218_132035_autoware_lidar_camera_calibration.yaml'
     calib_data_path = 'self_data/avpslam/calibration/top_lidar_backright_cam/20231221_211833_autoware_lidar_camera_calibration.yaml'
 
+    image_ext = '.jpg'
+    pointcloud_ext = '.pose'
     images_file = []
     for file_path in glob.glob(os.path.join(img_dir, f'*.jpg')):
         images_file.append(os.path.splitext(os.path.basename(file_path))[0])
 
     pointcloud_file = []
-    for file_path in glob.glob(os.path.join(pointcloud_dir, f'*.pcd')):
+    for file_path in glob.glob(os.path.join(pointcloud_dir, f'*.pose')):
         pointcloud_file.append(os.path.splitext(os.path.basename(file_path))[0])
 
     images_file.sort(key=lambda x: int(x))
     pointcloud_file.sort(key=lambda x: int(x))
 
+    pointclouds_file = 'self_data/after_mapping_pointcloud/in_1221_2023-12-21-16-06-08/global_fil_ascii.pcd'
+    pc = proj_mapped_pointcloud2cam.load_pcd_data(pointclouds_file)
+
     for i in tqdm(range(len(images_file))):
-        image_path = os.path.join(img_dir, images_file[i] + ".jpg")
-        pointcloud_path = os.path.join(pointcloud_dir, pointcloud_file[i] + ".pcd")
-        process_one_frame(image_path, pointcloud_path, calib_data_path)
+        image_path = os.path.join(img_dir, images_file[i] + image_ext)
+        pointcloud_path = os.path.join(pointcloud_dir, pointcloud_file[i] + pointcloud_ext)
+        # process_one_frame(image_path, pointcloud_path, calib_data_path)
+        proj_mapped_pointcloud2cam.process_one_frame(image_path, pointcloud_path, calib_data_path, pc, create_rgbi_data=True)
     print("finished!")
 
 if __name__ == '__main__':

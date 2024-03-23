@@ -6,4 +6,6 @@ data_object_velodyne/
 testing/
 self_data/
 correspond_data/
+*dataset/
+ros_data/
 __pycache__/
